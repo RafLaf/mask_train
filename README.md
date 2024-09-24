@@ -8,7 +8,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Datasets
-Please follow instructions on the [orginal repository](https://github.com/Frankluox/CloserLookAgainFewShot.git)
+Please follow instructions on the [orginal repository](https://github.com/Frankluox/CloserLookAgainFewShot.git). This is a fork from it.
 
 
 ## Preparing config files:
