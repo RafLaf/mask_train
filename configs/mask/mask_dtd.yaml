@@ -35,7 +35,8 @@ MODEL:
   CLASSIFIER_PARAMETERS: []
   NAME: evaluation
   TYPE: mask
-  LR_MASK: 0.07
-  EPOCH_MASK: 50
-OUTPUT: ./output_files/
+  LR_MASK: 0.1
+  EPOCH_MASK: 30
+  BINARY_MASK: false
+OUTPUT: ./output_files/float_mask/
 SEED: 0

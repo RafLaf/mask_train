@@ -41,7 +41,7 @@ class DINO_V2(nn.Module):
         self.num_heads = self.model.blocks[0].attn.num_heads
         self.head_dim = self.outdim//self.num_heads
         self.name = 'dinov2'
-        ones = torch.ones(len(self.model.blocks), self.num_heads)
+        ones = torch.ones(len(self.model.blocks), self.num_heads)*1.0
         self.pruning_mask = nn.Parameter(ones)
         self.scale = 0
         self.qkv = 0
@@ -114,8 +114,10 @@ class DINO_V2(nn.Module):
                 qkv_out = qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
                 q, k, v = qkv_out[0] * scale, qkv_out[1], qkv_out[2]
                 #p_mask = torch.clip(p_mask, 0.0, 1.0)
+                
                 q, k, v = q * p_mask, k * p_mask, v * p_mask
-
+                #p_mask_s = steep_sigmoid(p_mask)
+                #q, k, v = q * p_mask_s, k * p_mask_s, v * p_mask_s
                 attn = q @ k.transpose(-2, -1)
                 attn = attn.softmax(dim=-1)
                 attn = attn_drop(attn)
@@ -137,3 +139,15 @@ def create_model(name='dinov2_vitb14'):
     return DINO_V2(name)
 
 
+def steep_sigmoid(x, k=10):
+    """
+    Steeper sigmoid-like function that satisfies f(0) = 0 and f(1) = 1.
+    :param x: Input tensor or value, expected to be between 0 and 1.
+    :param k: The steepness parameter. The larger k, the steeper the curve.
+    :return: Transformed value or tensor with the desired shape.
+    """
+    # Apply the scaled sigmoid function
+    sigmoid_part = torch.sigmoid(k * (x - 0.5))
+    
+    # Rescale to ensure f(0) = 0 and f(1) = 1
+    return (sigmoid_part - torch.sigmoid(torch.tensor(-k / 2))) / (1 - 2 * torch.sigmoid(torch.tensor(-k / 2)))

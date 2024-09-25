@@ -70,6 +70,7 @@ class Mask(torch.nn.Module):
         self.ft_epoch2 = config.MODEL.EPOCH_MASK
         self.lr = config.MODEL.LR_MASK
         self.batch_size = 64
+        self.binary = config.MODEL.BINARY_MASK
 
 
     def initialize_model(self, way):
@@ -165,7 +166,7 @@ class Mask(torch.nn.Module):
         step = 0
         epoch=0
         with torch.enable_grad():
-            while epoch < self.ft_epoch2 and torch.sum(self.model.backbone.pruning_mask.data<0.3)<5:
+            while epoch < self.ft_epoch2:# and torch.sum(self.model.backbone.pruning_mask.data<0.3)<2:
                 print('### \n',torch.sum(self.model.backbone.pruning_mask.data<0.3) )
                 loss, acc = self.loop(support_size = labels[0]['support'].shape[0],support_images = images[0]['support'] ,support_labels = labels[0]['support'],model=self.model,set_optimizer= self.set_optimizer, backbone_grad=True)
                 total_loss += loss
@@ -176,7 +177,33 @@ class Mask(torch.nn.Module):
                 epoch+=1
 
         print('training over')
-        self.model.backbone.pruning_mask.data = (self.model.backbone.pruning_mask.data>0.3)*1.0
+        if self.binary:
+            print('before', self.model.backbone.pruning_mask)
+            def set_n_lowest_to_zero(tensor, n_lowest):
+                num_rows, num_cols = tensor.shape
+
+                # Flatten the tensor and get the indices of the N smallest values
+                flattened_tensor = tensor.flatten()
+                _, indices = torch.topk(flattened_tensor, k=n_lowest, largest=False)
+                
+                # Set the N lowest values to zero
+                for idx in indices:
+                    # Convert flattened index back to 2D index manually
+                    row_idx = idx // num_cols
+                    col_idx = idx % num_cols
+                    tensor[row_idx, col_idx] = 0
+
+            # Example usage:
+            # Assuming `self.model.backbone.pruning_mask.data` is a 2D tensor
+            pruning_mask = self.model.backbone.pruning_mask.data
+            n_lowest = 2  # Set how many lowest values you want to modify
+
+            # Set N lowest values in the tensor to 0
+            set_n_lowest_to_zero(pruning_mask, n_lowest)
+            print('after', self.model.backbone.pruning_mask)
+        
+
+
         with torch.no_grad():
             support_feat = self.model.backbone(images[0]['support'].squeeze().cuda())
         classi_score = self.logreg.forward(query_images = support_feat, support_images = support_feat , support_labels = labels[0]['support'])
