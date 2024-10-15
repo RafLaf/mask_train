@@ -39,6 +39,6 @@ MODEL:
   EPOCH_MASK: 30
   BINARY_MASK: true
   N_LOWEST: 0
-OUTPUT: output_files/no_constraint/
+OUTPUT: output_files/no_constraint_no_sigmoid/
 #OUTPUT: 10_HEAD
 SEED: 0

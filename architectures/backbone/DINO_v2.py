@@ -76,7 +76,8 @@ class DINO_V2(nn.Module):
                 idx = torch.zeros(self.outdim)
                 idx[j * self.head_dim : (j + 1) * self.head_dim] = 1
                 idx = idx.bool()
-                self.model.blocks[i].attn.qkv.weight.data[:, idx] *= torch.sigmoid(self.pruning_mask[i, j])
+                #self.model.blocks[i].attn.qkv.weight.data[:, idx] *= torch.sigmoid(self.pruning_mask[i, j])
+                self.model.blocks[i].attn.qkv.weight.data[:, idx] *= self.pruning_mask[i, j]
     
     def custom_attn_forward(self, x: Tensor) -> Tensor:
         B, N, C = x.shape
