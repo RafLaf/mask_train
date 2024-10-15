@@ -207,6 +207,7 @@ def test(config, prunning_matrix=None, task_number=None , heuristic=False, pre_l
     
     # logging testing results in config.OUTPUT/results.json
     if not heuristic:
+        prunning_matrix = model.model.backbone.pruning_mask
         save_results(config, acc1, ci, prunning_matrix=prunning_matrix, task_number=task_number)
     if heuristic:
         return -loss

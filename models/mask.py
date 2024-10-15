@@ -71,6 +71,7 @@ class Mask(torch.nn.Module):
         self.lr = config.MODEL.LR_MASK
         self.batch_size = 64
         self.binary = config.MODEL.BINARY_MASK
+        self.n_lowest = config.MODEL.N_LOWEST
 
 
     def initialize_model(self, way):
@@ -121,7 +122,8 @@ class Mask(torch.nn.Module):
         set_optimizer.step()
         # Clamp pruning_mask between 0 and 1
         with torch.no_grad():
-            model.backbone.pruning_mask.clamp_(0, 1)
+            pass
+            #model.backbone.pruning_mask.clamp_(0, 1)
 
             #temp = 0.5
             #model.backbone.pruning_mask.data = torch.sigmoid(model.backbone.pruning_mask.data / temp)
@@ -191,12 +193,11 @@ class Mask(torch.nn.Module):
                     # Convert flattened index back to 2D index manually
                     row_idx = idx // num_cols
                     col_idx = idx % num_cols
+                    print('row_idx',row_idx, 'col_idx',col_idx)
                     tensor[row_idx, col_idx] = 0
 
-            # Example usage:
-            # Assuming `self.model.backbone.pruning_mask.data` is a 2D tensor
             pruning_mask = self.model.backbone.pruning_mask.data
-            n_lowest = 2  # Set how many lowest values you want to modify
+            n_lowest = self.n_lowest
 
             # Set N lowest values in the tensor to 0
             set_n_lowest_to_zero(pruning_mask, n_lowest)
