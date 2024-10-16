@@ -6,7 +6,7 @@ DATASET="dtd"
 # Update configuration file with the dataset variable
 CONFIG_PATH="./configs/mask/mask_dtd.yaml"
 CONFIG_PATH_2="./configs/mask/mask_dtd_binary.yaml"
-#CONFIG_PATH_2="./configs/mask/mask_mscoco_binary.yaml"
+CONFIG_PATH_2="./configs/mask/mask_mscoco_binary.yaml"
 
 
 n=0

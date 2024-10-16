@@ -15,7 +15,8 @@ DATA:
     DATASET_NAMES:
       - mscoco
     DATASET_ROOTS:
-      - /home/datasets/mscoco/imgs_g/
+      - /speech/dbwork/mul/spielwiese/delafarr/mscoco/imgs_g/
+    #  - /home/datasets/mscoco/imgs_g/
     EPISODE_DESCR_CONFIG:
       MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
@@ -39,6 +40,6 @@ MODEL:
   EPOCH_MASK: 30
   BINARY_MASK: true
   N_LOWEST: 0
-OUTPUT: output_files/no_constraint_no_sigmoid/
+OUTPUT: output_files/only_v/
 #OUTPUT: 10_HEAD
 SEED: 0

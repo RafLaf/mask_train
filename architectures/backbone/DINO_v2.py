@@ -61,40 +61,7 @@ class DINO_V2(nn.Module):
                     #to not put the ouput at 0 but simply remove the effect of one head I should prune in the second dimension.
                     #original_attn_layer = self.model.blocks[i].attn
                     #original_attn_layer.forward  = custom_attn_forward.__get__(original_attn_layer, nn.Module)
-    def apply_pruning_old(self):
-        """
-        Apply the pruning mask in a differentiable way.
-        Each head will have a scaling factor learned through the pruning mask.
-        """
-        num_layers = self.pruning_mask.shape[0]
-        num_heads = self.pruning_mask.shape[1]
-        
-        # Iterate over each layer and each head
-        for i in range(num_layers):
-            for j in range(num_heads):
-                # Get the mask value for this head
-                idx = torch.zeros(self.outdim)
-                idx[j * self.head_dim : (j + 1) * self.head_dim] = 1
-                idx = idx.bool()
-                #self.model.blocks[i].attn.qkv.weight.data[:, idx] *= torch.sigmoid(self.pruning_mask[i, j])
-                self.model.blocks[i].attn.qkv.weight.data[:, idx] *= self.pruning_mask[i, j]
-    
-    def custom_attn_forward(self, x: Tensor) -> Tensor:
-        B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
 
-        q, k, v = qkv[0] * self.scale, qkv[1], qkv[2]
-        
-        q, k, v = q * self.pruning_mask[self.position].view(1,-1,1,1), k * self.pruning_mask[self.position].view(1,-1,1,1), v * self.pruning_mask[self.position].view(1,-1,1,1)
-        attn = q @ k.transpose(-2, -1)
-
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
-
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
-        x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
     
     def apply_pruning_mask(self):
         num_layers = self.pruning_mask.shape[0]
@@ -113,7 +80,7 @@ class DINO_V2(nn.Module):
             def custom_attn_forward(self, x: torch.Tensor, p_mask = self.pruning_mask[i].view(1,-1,1,1),scale=scale, qkv=qkv, attn_drop=attn_drop, proj=proj, proj_drop=proj_drop, position=position) -> torch.Tensor:
                 B, N, C = x.shape
                 qkv_out = qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-                q, k, v = qkv_out[0] * scale, qkv_out[1], qkv_out[2]
+                q, k, v = qkv_out[0] * scale, qkv_out[1], qkv_out[2] #not the mask (it is below)
                 #p_mask = torch.clip(p_mask, 0.0, 1.0)
                 
                 q, k, v = q * p_mask, k * p_mask, v * p_mask

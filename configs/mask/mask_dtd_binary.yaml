@@ -15,7 +15,8 @@ DATA:
     DATASET_NAMES:
       - dtd
     DATASET_ROOTS:
-      - /home/datasets/dtd/
+      - /speech/dbwork/mul/spielwiese/delafarr/dtd/
+      #- /home/datasets/dtd/
     EPISODE_DESCR_CONFIG:
       MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
