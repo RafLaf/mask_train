@@ -41,8 +41,8 @@ class DINO_V2(nn.Module):
         self.num_heads = self.model.blocks[0].attn.num_heads
         self.head_dim = self.outdim//self.num_heads
         self.name = 'dinov2'
-        ones = torch.ones(len(self.model.blocks), self.num_heads)*1.0
-        self.pruning_mask = nn.Parameter(ones)
+        zeros = torch.zeros(len(self.model.blocks), self.num_heads)
+        self.pruning_mask = nn.Parameter(zeros)
         self.scale = 0
         self.qkv = 0
         self.position = 0
@@ -83,7 +83,8 @@ class DINO_V2(nn.Module):
                 q, k, v = qkv_out[0] * scale, qkv_out[1], qkv_out[2] #not the mask (it is below)
                 #p_mask = torch.clip(p_mask, 0.0, 1.0)
                 
-                q, k, v = q * p_mask, k * p_mask, v * p_mask
+                #q, k, v = q * p_mask, k * p_mask, v * p_mask
+                v = v * (p_mask + 1)
                 #p_mask_s = steep_sigmoid(p_mask)
                 #q, k, v = q * p_mask_s, k * p_mask_s, v * p_mask_s
                 attn = q @ k.transpose(-2, -1)

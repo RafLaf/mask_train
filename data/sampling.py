@@ -517,7 +517,7 @@ class EpisodeSampler(object):
           if len(self.remaining_sample[self.class_set[cid]]) >= total_num_per_class[i]:
             all_selected_files = self._rng.choice(self.remaining_sample[self.class_set[cid]],
                                                 total_num_per_class[i], False)
-            print('with replacement')
+            #print('with replacement')
         else:
           # random sampling of images.
           if len(self.remaining_sample[self.class_set[cid]]) >= total_num_per_class[i]:
@@ -525,7 +525,7 @@ class EpisodeSampler(object):
                                                 total_num_per_class[i], False)
             self.remaining_sample[self.class_set[cid]] = [file for file in self.remaining_sample[self.class_set[cid]] if file not in all_selected_files]
             #self.remaining_sample[self.class_set[cid]] = list(set(self.remaining_sample[self.class_set[cid]])-set(all_selected_files))
-            print('no replacement')
+            #print('no replacement')
           else:
             return None, None
 
