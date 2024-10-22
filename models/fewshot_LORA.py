@@ -75,7 +75,7 @@ class LORAtuner(nn.Module):
         '''
         super().__init__()
         self.backbone = get_backbone(config.MODEL.BACKBONE, *config.MODEL.BACKBONE_HYPERPARAMETERS)
-        self.ft_batchsize = 50
+        self.ft_batchsize = 128
         self.ft_epoch1 = config.MODEL.EPOCH_HEAD
         self.ft_epoch2 = config.MODEL.EPOCH_LORA
         self.lr1  = config.MODEL.LR_HEAD
@@ -99,10 +99,6 @@ class LORAtuner(nn.Module):
         train_batch = support_images[selected_id].to('cuda').squeeze()
         label_batch = support_labels[selected_id].to('cuda').squeeze()
 
-        # Initialize model and optimizers only once
-        way = torch.max(support_labels).item() + 1
-        self.initialize_model(way)
-        self.initialize_optimizers()
 
         # Initialize the loss variable
         loss = None
@@ -184,6 +180,17 @@ class LORAtuner(nn.Module):
         print('####################')
         with torch.enable_grad():
             for epoch in range(self.ft_epoch2):
+                print_params = True
+                if print_params:
+                    total_params = sum([p.numel() for p in self.model.parameters()])
+                    trainable_params = sum([p.numel() for p in self.model.parameters() if p.requires_grad])
+                    print(
+                    f"""
+                    {total_params} total params,
+                    {trainable_params}" trainable params,
+                    {(100.0 * trainable_params / total_params):.2f}% of all params are trainable.
+                    """
+                    )
                 loss, acc = self.loop(support_size = labels[0]['support'].shape[0],support_images = images[0]['support'] ,support_labels = labels[0]['support'],model=self.model,set_optimizer= set_optimizer_2, backbone_grad=True)
                 total_loss += loss
                 total_acc += acc

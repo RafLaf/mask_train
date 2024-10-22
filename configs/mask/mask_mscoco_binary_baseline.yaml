@@ -1,15 +1,14 @@
 AUG:
   MEAN:
-  - 0.4712
-  - 0.4499
-  - 0.4031
+    - 0.4712
+    - 0.4499
+    - 0.4031
   STD:
-  - 0.2726
-  - 0.2634
-  - 0.2794
+    - 0.2726
+    - 0.2634
+    - 0.2794
   TEST_CROP: true
 DATA:
-  NUM_WORKERS: 2
   IMG_SIZE: 224
   TEST:
     BATCH_SIZE: 1
@@ -23,8 +22,8 @@ DATA:
       MIN_EXAMPLES_IN_CLASS: 20
       #NUM_QUERY: 15
       NUM_SUPPORT: 50
-      NUM_TASKS_PER_EPOCH: 1
-      NUM_WAYS: 40
+      NUM_TASKS_PER_EPOCH: 50
+      NUM_WAYS: 5
       SEQUENTIAL_SAMPLING: 0
       USE_BILEVEL_HIERARCHY: false
       USE_DAG_HIERARCHY: false
@@ -36,6 +35,11 @@ MODEL:
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
   NAME: evaluation
-  TYPE: Episodic_Model
-OUTPUT: output_files/LR/
+  TYPE: mask
+  LR_MASK: 0.1
+  EPOCH_MASK: 0
+  BINARY_MASK: true
+  N_LOWEST: 0
+OUTPUT: output_files/baseline/
+#OUTPUT: 10_HEAD
 SEED: 0

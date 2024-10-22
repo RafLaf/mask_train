@@ -121,8 +121,7 @@ def sample_support_set_size(num_remaining_per_class,
     raise ValueError('max_support_set_size is too small to have at least one '
                      'support example per class.')
   beta = rng.uniform()
-  # print('hh')
-  # print(beta)
+
   
 
   support_size_contributions = np.minimum(max_support_size_contrib_per_class,
@@ -442,6 +441,7 @@ class EpisodeSampler(object):
 
       if len(ids_rel) < num_ways:
         return None
+
       episode_classes_rel = sample_class_ids_uniformly(
           num_ways, ids_rel, rng=self._rng)
       

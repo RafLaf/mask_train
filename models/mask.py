@@ -69,7 +69,8 @@ class Mask(torch.nn.Module):
         
         self.ft_epoch2 = config.MODEL.EPOCH_MASK
         self.lr = config.MODEL.LR_MASK
-        self.batch_size = 64
+        self.reg_mask = config.MODEL.REG_MASK
+        self.batch_size = 128
         self.binary = config.MODEL.BINARY_MASK
         self.n_lowest = config.MODEL.N_LOWEST
 
@@ -83,7 +84,7 @@ class Mask(torch.nn.Module):
 
         self.L = nn.Linear(self.backbone.outdim, way)
         for param in self.model.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
         self.model.backbone.pruning_mask.requires_grad = True
         self.model.L.weight.requires_grad = True
         #self.set_optimizer = torch.optim.Adam([{'params': [self.model.backbone.pruning_mask]},  {'params': self.model.L.parameters()}], lr=self.lr)
@@ -102,10 +103,6 @@ class Mask(torch.nn.Module):
         # Prepare batches
         train_batch = support_images[selected_id].to('cuda').squeeze()
         label_batch = support_labels[selected_id].to('cuda').squeeze()
-
-        # Initialize model and optimizers only once
-        way = torch.max(support_labels).item() + 1
-
 
         # Initialize the loss variable
         loss = None
@@ -140,8 +137,6 @@ class Mask(torch.nn.Module):
         #print('after step mask',(model.backbone.pruning_mask>0.5)*1)
         torch.set_printoptions(precision=2, sci_mode=False)
         print('after step mask',model.backbone.pruning_mask)
-        print('binary mask \n',(model.backbone.pruning_mask>0.3)*1)
-        print('average pruning level', f'{1-torch.mean(model.backbone.pruning_mask).item():.3f}')
         #print('model grad after step mask',model.backbone.pruning_mask.grad)
         # Compute accuracy
         logits = model(train_batch, backbone_grad=backbone_grad)  # Re-evaluate to get the logits for accuracy
@@ -158,7 +153,16 @@ class Mask(torch.nn.Module):
 
 
         with torch.no_grad():
-            support_feat = self.model.backbone(images[0]['support'].squeeze().cuda())
+            support_images = images[0]['support'].squeeze().cuda()  # Extract and move to GPU
+            batches = torch.split(support_images, 2000)  # Split into batches of size 2000
+
+            all_support_feat = []  # To collect all the features
+            for batch in batches:
+                support_feat = self.model.backbone(batch)  # Get features for each batch
+                all_support_feat.append(support_feat)
+
+            # Concatenate all the features back together
+            support_feat = torch.cat(all_support_feat, dim=0)
         classi_score = self.logreg.forward(query_images = support_feat, support_images = support_feat , support_labels = labels[0]['support'])
         self.model.L.weight = torch.nn.Parameter(torch.tensor(self.logreg.classifier.coef_, dtype=torch.float32).to(self.model.L.weight.device), requires_grad=True)
         self.model.L.bias = torch.nn.Parameter(torch.tensor(self.logreg.classifier.intercept_, dtype=torch.float32).to(self.model.L.bias.device), requires_grad=True)
@@ -169,7 +173,17 @@ class Mask(torch.nn.Module):
         epoch=0
         with torch.enable_grad():
             while epoch < self.ft_epoch2:# and torch.sum(self.model.backbone.pruning_mask.data<0.3)<2:
-                print('### \n',torch.sum(self.model.backbone.pruning_mask.data<0.3) )
+                print_params = True
+                if print_params:
+                    total_params = sum([p.numel() for p in self.model.parameters()])
+                    trainable_params = sum([p.numel() for p in self.model.parameters() if p.requires_grad])
+                    print(
+                    f"""
+                    {total_params} total params,
+                    {trainable_params}" trainable params,
+                    {(100.0 * trainable_params / total_params):.2f}% of all params are trainable.
+                    """
+                    )
                 loss, acc = self.loop(support_size = labels[0]['support'].shape[0],support_images = images[0]['support'] ,support_labels = labels[0]['support'],model=self.model,set_optimizer= self.set_optimizer, backbone_grad=True)
                 total_loss += loss
                 total_acc += acc
@@ -206,7 +220,16 @@ class Mask(torch.nn.Module):
 
 
         with torch.no_grad():
-            support_feat = self.model.backbone(images[0]['support'].squeeze().cuda())
+            support_images = images[0]['support'].squeeze().cuda()  # Extract and move to GPU
+            batches = torch.split(support_images, 2000)  # Split into batches of size 2000
+
+            all_support_feat = []  # To collect all the features
+            for batch in batches:
+                support_feat = self.model.backbone(batch)  # Get features for each batch
+                all_support_feat.append(support_feat)
+
+            # Concatenate all the features back together
+            support_feat = torch.cat(all_support_feat, dim=0)
         classi_score = self.logreg.forward(query_images = support_feat, support_images = support_feat , support_labels = labels[0]['support'])
         self.model.L.weight = torch.nn.Parameter(torch.tensor(self.logreg.classifier.coef_, dtype=torch.float32).to(self.model.L.weight.device), requires_grad=True)
         self.model.L.bias = torch.nn.Parameter(torch.tensor(self.logreg.classifier.intercept_, dtype=torch.float32).to(self.model.L.bias.device), requires_grad=True)
