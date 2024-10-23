@@ -1,6 +1,7 @@
 import subprocess
 import yaml
 import optuna
+import argparse
 
 def extract_metric(output):
     # Split the output into lines and search for the "Best accuracy" line
@@ -11,12 +12,11 @@ def extract_metric(output):
             return float(line.split(":")[-1].strip())
     return None
 
-def objective(trial):
+def objective(trial, config_file):
     # Suggest hyperparameters to be optimized
     lr_lora = trial.suggest_float('lr_lora', 1e-5, 1e-1, log=True)
     reg_lora = trial.suggest_float('regularization_lora', 1e-9, 1.0, log=True)
     epoch_lora = trial.suggest_int('epoch_lora', 1, 100)
-    config_file = 'configs/lora/mscoco_DINO_v2_scikit_lora.yaml'
 
     # Load the existing config.yaml
     with open(config_file, 'r') as f:
@@ -36,21 +36,29 @@ def objective(trial):
     
     # Extract the output from stdout and find the best accuracy
     output = process.stdout
-    #print('########## showing output')
-    #print(output)
-    #print(process.stderr)
     print(output)
     result = extract_metric(output)
     print(f'\n \n Result obtained {result} \n \n with \n lr_lora: {lr_lora} \n reg_lora: {reg_lora} \n epoch_lora: {epoch_lora}')
     return result
 
-# Run the optimization using Optuna
-if __name__ == "__main__":
+def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Optuna hyperparameter optimization for LoRA model")
+    parser.add_argument('config_file', type=str, help='Path to the config file')
+    parser.add_argument('--n_trials', type=int, default=50, help='Number of Optuna trials')
+    
+    args = parser.parse_args()
+
+    # Run the optimization using Optuna
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=50)
+    study.optimize(lambda trial: objective(trial, args.config_file), n_trials=args.n_trials)
 
     # Print the best trial and its hyperparameters
     print("Best trial:")
     trial = study.best_trial
     print(f"  Value: {trial.value}")
     print(f"  Params: {trial.params}")
+    print(f"  Config file: {args.config_file}")
+
+if __name__ == "__main__":
+    main()

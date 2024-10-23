@@ -9,36 +9,32 @@ AUG:
   - 0.2794
   TEST_CROP: true
 DATA:
-  IMG_SIZE: 224
   NUM_WORKERS: 2
+  IMG_SIZE: 224
   TEST:
     BATCH_SIZE: 1
     DATASET_NAMES:
-    - fungi
+      - aircraft
     DATASET_ROOTS:
-    - /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
+      - /speech/dbwork/mul/spielwiese/delafarr/fgvc-aircraft-2013b/data/converted/converted/
     EPISODE_DESCR_CONFIG:
+      MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
-      NUM_QUERY: 10
+      #NUM_QUERY: 10
       NUM_SUPPORT: 50
       NUM_TASKS_PER_EPOCH: 1
-      NUM_WAYS: 10
-      REPLACEMENT: true
+      NUM_WAYS: 15
       SEQUENTIAL_SAMPLING: 0
       USE_BILEVEL_HIERARCHY: false
       USE_DAG_HIERARCHY: false
+      REPLACEMENT: true
 GPU_ID: 0
 IS_TRAIN: 0
 MODEL:
   BACKBONE: DINO_v2
-  BINARY_MASK: true
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
-  EPOCH_MASK: 68
-  LR_MASK: 0.39002977602972283
   NAME: evaluation
-  N_LOWEST: 0
-  REG_MASK: 0.01023545550717975
-  TYPE: mask
-OUTPUT: output_files/one_task_50_shots_baseline/
+  TYPE: Episodic_Model
+OUTPUT: output_files/LR/
 SEED: 0

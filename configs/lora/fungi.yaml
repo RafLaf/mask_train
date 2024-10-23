@@ -9,25 +9,24 @@ AUG:
   - 0.2794
   TEST_CROP: true
 DATA:
-  NUM_WORKERS: 2
   IMG_SIZE: 224
+  NUM_WORKERS: 2
   TEST:
     BATCH_SIZE: 1
     DATASET_NAMES:
-      - fungi
+    - fungi
     DATASET_ROOTS:
-      - /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
+    - /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
     EPISODE_DESCR_CONFIG:
-      #MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
       NUM_QUERY: 10
       NUM_SUPPORT: 50
       NUM_TASKS_PER_EPOCH: 1
       NUM_WAYS: 10
+      REPLACEMENT: true
       SEQUENTIAL_SAMPLING: 0
       USE_BILEVEL_HIERARCHY: false
       USE_DAG_HIERARCHY: false
-      REPLACEMENT: true
 GPU_ID: 0
 IS_TRAIN: 0
 MODEL:
@@ -35,14 +34,14 @@ MODEL:
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
   EPOCH_HEAD: 0
-  EPOCH_LORA: 97
+  EPOCH_LORA: 100
   LR_HEAD: 0.01
-  LR_LORA: 0.0005742833061620519
+  LR_LORA: 1.9162916465016707e-05
   NAME: evaluation
   OPTIMIZER_HEAD: scikit
   OPTIMIZER_LORA: adam
   REGULARIZATION_HEAD: 1.0
-  REGULARIZATION_LORA: 1.4966107101089496e-07
+  REGULARIZATION_LORA: 2.6504423760676466e-06
   TYPE: fewshot_LORA
 OUTPUT: output_files/lora/
 SEED: 0
