@@ -158,6 +158,8 @@ class LORAtuner(nn.Module):
             raise NotImplementedError
 
         set_optimizer_2 = torch.optim.Adam(self.model.parameters(), lr = self.lr2,weight_decay = self.C_LORA)#, momentum=0.9)
+        for name, param in self.model.named_parameters():
+            print(name)
         
         step = 0
         total_loss = 0.0
@@ -194,6 +196,7 @@ class LORAtuner(nn.Module):
                 loss, acc = self.loop(support_size = labels[0]['support'].shape[0],support_images = images[0]['support'] ,support_labels = labels[0]['support'],model=self.model,set_optimizer= set_optimizer_2, backbone_grad=True)
                 total_loss += loss
                 total_acc += acc
+                print('pruning_mask', self.model.backbone.pruning_mask)
 
                 step += 1
                 print(f'{step}, {total_loss/step:.2f}, {total_acc/step:.2f}')

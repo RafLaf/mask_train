@@ -2,7 +2,6 @@ import subprocess
 import yaml
 import optuna
 import argparse
-import numpy as np
 import logging
 
 
@@ -101,8 +100,8 @@ def main():
             yaml.safe_dump(config, f)
 
     if args.vary_shots:
-        #for s in range(5, 70, 5):
-        for s in range(1, 5):
+        #for s in list(range(1, 5)) + list(range(5, 70, 5)):
+        for s in range(60, 70, 5):
             update_config(args.config_file, s)
             study = do_study(args.config_file, args.n_trials)
             log_best_results(study, args.config_file, s)

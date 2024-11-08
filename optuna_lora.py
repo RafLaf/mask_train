@@ -90,8 +90,8 @@ def main():
     logging.info('Started Optuna optimization')
 
     if args.vary_shots:
-        #for s in range(5, 70, 5):
-        for s in range(1, 5):
+        #for s in list(range(1, 5)) + list(range(5, 70, 5)):
+        for s in range(20, 70, 5):
             update_config(args.config_file, s)
             study = optuna.create_study(direction="maximize")
             study.optimize(lambda trial: objective(trial, args.config_file), n_trials=args.n_trials)

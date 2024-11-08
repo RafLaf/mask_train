@@ -14,15 +14,15 @@ DATA:
   TEST:
     BATCH_SIZE: 1
     DATASET_NAMES:
-    - aircraft
+    - mscoco
     DATASET_ROOTS:
-    - /speech/dbwork/mul/spielwiese/delafarr/fgvc-aircraft-2013b/data/converted/converted/
+    - /speech/dbwork/mul/spielwiese/delafarr/mscoco/imgs_g/
     EPISODE_DESCR_CONFIG:
       MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
       NUM_SUPPORT: 65
       NUM_TASKS_PER_EPOCH: 1
-      NUM_WAYS: 15
+      NUM_WAYS: 40
       REPLACEMENT: true
       SEQUENTIAL_SAMPLING: 0
       USE_BILEVEL_HIERARCHY: false
@@ -30,15 +30,15 @@ DATA:
 GPU_ID: 0
 IS_TRAIN: 0
 MODEL:
-  BACKBONE: DINO_v2
+  BACKBONE: clip
   BINARY_MASK: true
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
-  EPOCH_MASK: 66
-  LR_MASK: 0.0007668078470215036
+  EPOCH_MASK: 43
+  LR_MASK: 2.995080297934221e-05
   NAME: evaluation
   N_LOWEST: 0
-  REG_MASK: 0.002076816040419173
+  REG_MASK: 0.2731373391119473
   TYPE: mask
-OUTPUT: output_files/one_task_50_shots_baseline/
+OUTPUT: output_files/baseline/
 SEED: 0

@@ -43,5 +43,5 @@ MODEL:
   REGULARIZATION_HEAD: 1.0
   REGULARIZATION_LORA: 0.2047797810334277
   TYPE: fewshot_LORA
-OUTPUT: output_files/lora/
+OUTPUT: output_files/test/
 SEED: 0
