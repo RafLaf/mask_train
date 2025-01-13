@@ -14,15 +14,16 @@ DATA:
   TEST:
     BATCH_SIZE: 1
     DATASET_NAMES:
-    - mscoco
+    - fungi
     DATASET_ROOTS:
-    - /home/datasets/mscoco/imgs_g/
+    - /home/datasets/fungi/
+    #- /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
     EPISODE_DESCR_CONFIG:
-      MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
-      NUM_SUPPORT: 65
+      NUM_QUERY: 10
+      NUM_SUPPORT: 10
       NUM_TASKS_PER_EPOCH: 1
-      NUM_WAYS: 40
+      NUM_WAYS: 10
       REPLACEMENT: true
       SEQUENTIAL_SAMPLING: 0
       USE_BILEVEL_HIERARCHY: false
@@ -33,7 +34,17 @@ MODEL:
   BACKBONE: DINO_v2
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
+  EPOCH_HEAD: 0
+  EPOCH_LORA: 47
+  LR_HEAD: 0.01
+  LR_LORA: 0.004724268611804812
+  LR_MASK: 1.0
   NAME: evaluation
-  TYPE: Episodic_Model
-OUTPUT: output_files/LR/
+  OPTIMIZER_HEAD: scikit
+  OPTIMIZER_LORA: adam
+  REGULARIZATION_HEAD: 1.0
+  REGULARIZATION_LORA: 0.2047797810334277
+  REG_MASK: 0.0
+  TYPE: LORA_mask
+OUTPUT: output_files/test/
 SEED: 0

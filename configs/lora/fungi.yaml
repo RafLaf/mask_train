@@ -16,11 +16,12 @@ DATA:
     DATASET_NAMES:
     - fungi
     DATASET_ROOTS:
-    - /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
+    - /home/datasets/fungi/
+    #- /speech/dbwork/mul/spielwiese/delafarr/fungi/images/
     EPISODE_DESCR_CONFIG:
       MIN_EXAMPLES_IN_CLASS: 20
       NUM_QUERY: 10
-      NUM_SUPPORT: 1
+      NUM_SUPPORT: 10
       NUM_TASKS_PER_EPOCH: 1
       NUM_WAYS: 10
       REPLACEMENT: true

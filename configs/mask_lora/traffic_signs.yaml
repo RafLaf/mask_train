@@ -14,9 +14,9 @@ DATA:
   TEST:
     BATCH_SIZE: 1
     DATASET_NAMES:
-    - mscoco
+    - traffic_signs
     DATASET_ROOTS:
-    - /home/datasets/mscoco/imgs_g/
+    - /speech/dbwork/mul/spielwiese/delafarr/traffic_signs/GTSRB/Final_Training/Images/
     EPISODE_DESCR_CONFIG:
       MAX_NUM_QUERY: 100000
       MIN_EXAMPLES_IN_CLASS: 20
@@ -33,7 +33,15 @@ MODEL:
   BACKBONE: DINO_v2
   CLASSIFIER: LR
   CLASSIFIER_PARAMETERS: []
+  EPOCH_HEAD: 0
+  EPOCH_LORA: 81
+  LR_HEAD: 0.01
+  LR_LORA: 0.0003431397887103079
   NAME: evaluation
-  TYPE: Episodic_Model
-OUTPUT: output_files/LR/
+  OPTIMIZER_HEAD: scikit
+  OPTIMIZER_LORA: adam
+  REGULARIZATION_HEAD: 1.0
+  REGULARIZATION_LORA: 2.1438761691852732e-05
+  TYPE: fewshot_LORA
+OUTPUT: output_files/lora/
 SEED: 0

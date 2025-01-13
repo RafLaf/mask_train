@@ -30,6 +30,8 @@ def log_results(config_file, shots):
     
     # Extract the output from stdout and find the best accuracy
     output = process.stdout
+    #print the error
+    print(process.stderr)
     result = extract_metric(output)
 
     # Log the results

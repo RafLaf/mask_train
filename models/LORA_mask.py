@@ -25,7 +25,7 @@ class FinetuneModel(torch.nn.Module):
     """
     the overall finetune module that incorporates a backbone and a head.
     """
-    def __init__(self, backbone, way, device):
+    def __init__(self, backbone, way, device,config):
         super().__init__()
         '''
         backbone: the pre-trained backbone
@@ -52,10 +52,16 @@ class FinetuneModel(torch.nn.Module):
         if self.backbone.name == 'clip':
             self.backbone.model.visual.transformer.resblocks = get_peft_model(self.backbone.model.visual.transformer.resblocks, self.config_lora)
         self.L = nn.Linear(backbone.outdim, way).to(device)
+                #load the weights
+        if True:
+            state_dic = torch.load(f"output_files/models/mask_{config.DATA.TEST.EPISODE_DESCR_CONFIG.NUM_SUPPORT}_shots.pth")
+            #filtered_state_dict = {k: v for k, v in state_dict.items() if not (k.startswith("L.weight") or k.startswith("L.bias"))}
 
+            self.load_state_dict(state_dic, strict=False)
 
     def forward(self, x, backbone_grad = True):
         # turn backbone_grad off if backbone is not to be finetuned
+        self.backbone.apply_pruning_mask()
         if backbone_grad:
             x = self.backbone(x)
         else:
@@ -80,11 +86,14 @@ class LORAtuner(nn.Module):
         self.ft_epoch2 = config.MODEL.EPOCH_LORA
         self.lr1  = config.MODEL.LR_HEAD
         self.lr2 = config.MODEL.LR_LORA
+        self.lr_MASK = config.MODEL.LR_MASK
+        self.C_MASK = config.MODEL.REG_MASK
         self.C_HEAD = config.MODEL.REGULARIZATION_HEAD
         self.C_LORA = config.MODEL.REGULARIZATION_LORA
         self.OPTIMIZER_HEAD = config.MODEL.OPTIMIZER_HEAD
         self.OPTIMIZER_LORA = config.MODEL.OPTIMIZER_LORA
         self.num_ways = config.DATA.TEST.EPISODE_DESCR_CONFIG.NUM_WAYS
+        self.config = config
         self.model = None  # Will hold the FinetuneModel instance
 
 
@@ -146,7 +155,7 @@ class LORAtuner(nn.Module):
                                    size: [num_query, way]
         """
         way = torch.max(labels[0]['support']).item()+1
-        self.model = FinetuneModel(self.backbone, way, device = 'cuda')
+        self.model = FinetuneModel(self.backbone, way, device = 'cuda', config=self.config)
         if self.OPTIMIZER_HEAD=='LBFGS':
             set_optimizer_1 = torch.optim.LBFGS(self.model.L.parameters(), max_iter = 1000)
         elif self.OPTIMIZER_HEAD == 'adam':
@@ -157,7 +166,20 @@ class LORAtuner(nn.Module):
         else:
             raise NotImplementedError
 
+        # Separate parameters
+        '''pruning_mask_params = [self.model.backbone.pruning_mask]  # Explicitly select pruning_mask
+        other_params = [p for n, p in self.model.named_parameters() if n != "backbone.pruning_mask"]
+
+        # Group parameters with different learning rates
+        optimizer_params = [
+            {"params": other_params, "lr": self.lr2, "weight_decay": self.C_LORA},  # Default parameters
+            {"params": pruning_mask_params, "lr": self.lr_MASK, "weight_decay": self.C_MASK},  # Specific parameters
+        ]
+
+        # Create the optimizer
+        set_optimizer_2 = torch.optim.Adam(optimizer_params)'''
         set_optimizer_2 = torch.optim.Adam(self.model.parameters(), lr = self.lr2,weight_decay = self.C_LORA)#, momentum=0.9)
+
         for name, param in self.model.named_parameters():
             print(name)
         
@@ -186,18 +208,18 @@ class LORAtuner(nn.Module):
                 if print_params:
                     total_params = sum([p.numel() for p in self.model.parameters()])
                     trainable_params = sum([p.numel() for p in self.model.parameters() if p.requires_grad])
-                    '''print(
-                    f"""
-                    {total_params} total params,
-                    {trainable_params}" trainable params,
-                    {(100.0 * trainable_params / total_params):.2f}% of all params are trainable.
-                    """
-                    )'''
+                    trainable_params_names = [n for n, p in self.model.named_parameters() if p.requires_grad]
+                    #print(trainable_params_names)
+                    #print(f"""
+                    #{total_params} total params,
+                    #{trainable_params}" trainable params,
+                    #{(100.0 * trainable_params / total_params):.2f}% of all params are trainable.
+                    #""")
                 loss, acc = self.loop(support_size = labels[0]['support'].shape[0],support_images = images[0]['support'] ,support_labels = labels[0]['support'],model=self.model,set_optimizer= set_optimizer_2, backbone_grad=True)
                 total_loss += loss
                 total_acc += acc
-                #print('pruning_mask', self.model.backbone.pruning_mask)
-                #print('pruning_mask', self.model.backbone.model.base_model.model.blocks[0].attn.qkv.lora_B.default.weight)
+                #print('pruning mask', self.model.backbone.pruning_mask)
+                #print('lora b', self.model.backbone.model.base_model.model.blocks[0].attn.qkv.lora_B.default.weight)
 
                 step += 1
                 print(f'{step}, {total_loss/step:.2f}, {total_acc/step:.2f}')

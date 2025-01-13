@@ -73,6 +73,7 @@ class Mask(torch.nn.Module):
         self.batch_size = 128
         self.binary = config.MODEL.BINARY_MASK
         self.n_lowest = config.MODEL.N_LOWEST
+        self.config = config
 
 
     def initialize_model(self, way):
@@ -251,6 +252,8 @@ class Mask(torch.nn.Module):
         query_classi_score = torch.cat(query_classi_list, dim=0)
         loss = F.cross_entropy(query_classi_score, labels[0]['query'].cuda().squeeze())
         acc = accuracy(query_classi_score, labels[0]['query'].cuda().squeeze())
+        #save the model
+        #torch.save(self.model.state_dict(), f"output_files/models/mask_{self.config['DATA']['TEST']['EPISODE_DESCR_CONFIG']['NUM_SUPPORT']}_shots.pth")
         return loss , acc 
 
 
